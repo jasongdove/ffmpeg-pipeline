@@ -9,7 +9,7 @@ export { FrameState } from "./frameState";
 export { VideoFormat } from "./format/videoFormat";
 
 export class CommandGenerator {
-    generateArguments(videoInputFile: VideoInputFile, pipelineSteps: Array<PipelineStep>): string {
+    generateArguments(videoInputFile: VideoInputFile, pipelineSteps: Array<PipelineStep>): Array<string> {
         const args = new Array<string>();
 
         args.push(...pipelineSteps.flatMap((s) => s.globalOptions));
@@ -25,6 +25,6 @@ export class CommandGenerator {
 
         args.push(...pipelineSteps.flatMap((s) => s.outputOptions));
 
-        return args.join(" ");
+        return args;
     }
 }
