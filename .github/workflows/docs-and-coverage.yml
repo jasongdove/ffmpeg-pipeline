@@ -1,9 +1,7 @@
 name: Generate docs and coverage report
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   generate-docs-and-coverage:
