@@ -19,6 +19,7 @@ import { VideoStream } from "../mediaStream";
 import { VideoFormat } from "../format/videoFormat";
 import { StreamSeekInputOption } from "../option/streamSeekInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
+import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 
 export abstract class PipelineBuilderBase {
     constructor(private videoInputFile: Option<VideoInputFile>, private audioInputFile: Option<AudioInputFile>) {}
@@ -31,6 +32,7 @@ export abstract class PipelineBuilderBase {
         // more dummy data
         const ffmpegState = new FFmpegState();
         ffmpegState.start = some("01:00:00");
+        ffmpegState.finish = some("00:00:22");
 
         const desiredState = new FrameState();
         desiredState.realtime = true;
@@ -53,6 +55,7 @@ export abstract class PipelineBuilderBase {
         this.setThreadCount(ffmpegState, desiredState, pipelineSteps);
         this.setSceneDetect(videoStream, desiredState, pipelineSteps);
         this.setStreamSeek(ffmpegState);
+        this.setTimeLimit(ffmpegState, pipelineSteps);
 
         return new FFmpegPipeline(pipelineSteps);
     }
@@ -100,5 +103,15 @@ export abstract class PipelineBuilderBase {
                 )
             );
         }
+    }
+
+    setTimeLimit(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
+        pipe(
+            ffmpegState.finish,
+            match(
+                () => {},
+                (f) => pipelineSteps.push(new TimeLimitOutputOption(f))
+            )
+        );
     }
 }

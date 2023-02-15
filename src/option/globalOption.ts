@@ -3,7 +3,7 @@ import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { PipelineStep } from "../interfaces/pipelineStep";
 
 export abstract class GlobalOption implements PipelineStep {
-    inputOptions(_inputFile: InputFile): string[] {
+    inputOptions(_inputFile: InputFile): Array<string> {
         return new Array<string>();
     }
     environmentVariables = new Array<EnvironmentVariable>();

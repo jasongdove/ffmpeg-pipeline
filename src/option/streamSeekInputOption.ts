@@ -5,7 +5,7 @@ import { InputOption } from "../interfaces/inputOption";
 export class StreamSeekInputOption implements InputOption {
     constructor(private start: string) {}
 
-    inputOptions(_inputFile: InputFile): string[] {
+    inputOptions(_inputFile: InputFile): Array<string> {
         return new Array<string>("-ss", this.start);
     }
 
