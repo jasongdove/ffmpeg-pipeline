@@ -1,9 +1,10 @@
+import { FFmpegState } from "../ffmpegState";
 import { FrameDataLocation } from "../frameDataLocation";
 import { FrameState } from "../frameState";
 import { BaseFilter } from "./baseFilter";
 
-export class YadifFilter extends BaseFilter {
-    constructor(_currentState: FrameState) {
+export class DeinterlaceFilter extends BaseFilter {
+    constructor(private ffmpegState: FFmpegState, _currentState: FrameState) {
         super();
     }
 
@@ -15,10 +16,10 @@ export class YadifFilter extends BaseFilter {
     }
 
     private generateFilter(): string {
-        const yadif = `yadif=1`;
+        const filter = this.ffmpegState.softwareDeinterlaceFilter;
 
         // TODO: hwdownload if needed
 
-        return yadif;
+        return filter;
     }
 }

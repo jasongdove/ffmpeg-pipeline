@@ -10,4 +10,6 @@ export class FFmpegState {
     public metadataAudioLanguage: string | null = null;
     public decoderHardwareAccelerationMode: HardwareAccelerationMode = HardwareAccelerationMode.None;
     public encoderHardwareAccelerationMode: HardwareAccelerationMode = HardwareAccelerationMode.None;
+    public softwareScalingAlgorithm: string = "fast_bilinear";
+    public softwareDeinterlaceFilter: string = "yadif=1";
 }
