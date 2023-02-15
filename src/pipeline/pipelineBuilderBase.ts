@@ -15,6 +15,7 @@ import { NoSceneDetectOutputOption } from "../option/noSceneDetectOutputOption";
 import { VideoStream } from "../mediaStream";
 import { VideoFormat } from "../format/videoFormat";
 import { StreamSeekInputOption } from "../option/streamSeekInputOption";
+import { RealtimeInputOption } from "../option/realtimeInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
@@ -50,6 +51,7 @@ export abstract class PipelineBuilderBase {
         this.setSceneDetect(videoStream, desiredState, pipelineSteps);
         this.setStreamSeek(ffmpegState);
         this.setTimeLimit(ffmpegState, pipelineSteps);
+        this.setRealtimeInput(desiredState);
 
         if (desiredState.videoFormat == VideoFormat.Copy) {
             pipelineSteps.push(new EncoderCopyVideo());
@@ -109,6 +111,18 @@ export abstract class PipelineBuilderBase {
     setTimeLimit(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
         if (ffmpegState.finish != null) {
             pipelineSteps.push(new TimeLimitOutputOption(ffmpegState.finish));
+        }
+    }
+
+    setRealtimeInput(desiredState: FrameState): void {
+        if (desiredState.realtime != null) {
+            const option = new RealtimeInputOption();
+
+            if (this.audioInputFile != null) {
+                this.audioInputFile.addOption(option);
+            }
+
+            this.videoInputFile.addOption(option);
         }
     }
 
