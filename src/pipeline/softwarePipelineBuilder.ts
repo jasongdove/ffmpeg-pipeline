@@ -58,7 +58,6 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
         desiredState: FrameState
     ): void {
         if (videoStream.frameSize.equals(desiredState.scaledSize) == false) {
-            console.log("should scale...");
             const scaleStep = new ScaleFilter(
                 ffmpegState,
                 currentState,

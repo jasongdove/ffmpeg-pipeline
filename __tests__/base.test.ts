@@ -1,4 +1,4 @@
-import { CommandGenerator, SoftwarePipelineBuilder } from "../src/index";
+import { AudioState, CommandGenerator, SoftwarePipelineBuilder } from "../src/index";
 import { AudioInputFile, VideoInputFile } from "../src/inputFile";
 import { FFmpegState } from "../src/ffmpegState";
 import { FrameState } from "../src/frameState";
@@ -11,8 +11,19 @@ describe("CommandGenerator", () => {
         const videoStream = new VideoStream(1, "hevc", new FrameSize(640, 480), false, "");
         const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(videoStream));
 
-        const audioStream = new AudioStream(2, "flac", 2);
-        const audioInputFile: AudioInputFile | null = new AudioInputFile("audio", new Array<AudioStream>(audioStream));
+        const audioStream = new AudioStream(2, "flac", 6);
+        const desiredAudioState = new AudioState();
+        desiredAudioState.audioEncoder = "ac3";
+        desiredAudioState.audioChannels = 2;
+        desiredAudioState.audioBitrate = 192;
+        desiredAudioState.audioBufferSize = 50;
+        desiredAudioState.audioSampleRate = 48;
+        desiredAudioState.audioDuration = 11_000;
+        const audioInputFile: AudioInputFile | null = new AudioInputFile(
+            "audio",
+            new Array<AudioStream>(audioStream),
+            desiredAudioState
+        );
 
         // more dummy data
         const ffmpegState = new FFmpegState();

@@ -25,7 +25,7 @@ export class ComplexFilter implements PipelineStep {
 
         const result = new Array<string>();
 
-        const audioFilterComplex = "";
+        let audioFilterComplex = "";
         let videoFilterComplex = "";
 
         const distinctPaths = new Array<string>();
@@ -52,21 +52,21 @@ export class ComplexFilter implements PipelineStep {
             }
         });
 
-        // TODO: audio filter chain
         if (this.audioInputFile != null) {
             const audioInputIndex = distinctPaths.indexOf(this.audioInputFile.path);
             this.audioInputFile.audioStreams.forEach((audioStream) => {
                 const index = audioStream.index;
                 audioLabel = `${audioInputIndex}:${index}`;
-                // if (this.filterChain.audioFilterSteps.some((s) => !this.isNullOrWhitespace(s.filter))) {
-                //     audioFilterComplex += `[${audioInputIndex}:${index}]`;
-                //     audioFilterComplex += this.filterChain.audioFilterSteps
-                //         .filter((s) => !this.isNullOrWhitespace(s.filter))
-                //         .map((s) => s.filter)
-                //         .join(",");
-                //     audioLabel = "[a]";
-                //     audioFilterComplex += audioLabel;
-                // }
+                if (this.audioInputFile!.filterSteps.some((s) => !this.isNullOrWhitespace(s.filter))) {
+                    audioFilterComplex += `[${audioInputIndex}:${index}]`;
+                    audioFilterComplex += this.audioInputFile!.filterSteps.filter(
+                        (s) => !this.isNullOrWhitespace(s.filter)
+                    )
+                        .map((s) => s.filter)
+                        .join(",");
+                    audioLabel = "[a]";
+                    audioFilterComplex += audioLabel;
+                }
             });
         }
 

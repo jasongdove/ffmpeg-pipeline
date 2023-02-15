@@ -6,3 +6,4 @@ export { FrameState } from "./frameState";
 export { FrameSize } from "./frameSize";
 export { VideoFormat } from "./format/videoFormat";
 export { CommandGenerator } from "./commandGenerator";
+export { AudioState } from "./state/audioState";

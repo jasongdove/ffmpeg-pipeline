@@ -19,7 +19,7 @@ import { RealtimeInputOption } from "../option/realtimeInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
-import { EncoderAc3 } from "../encoder/encoderAc3";
+import { AudioEncoder } from "../encoder/audioEncoder";
 import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
 import { DoNotMapMetadataOutputOption } from "../option/doNotMapMetadataOutputOption";
 import { OutputFormatMpegTs } from "../option/outputFormatMpegTs";
@@ -50,6 +50,12 @@ import { EncoderLibx265 } from "../encoder/encoderLibx265";
 import { EncoderMpeg2Video } from "../encoder/encoderMpeg2Video";
 import { EncoderImplicitVideo } from "../encoder/encoderImplicitVideo";
 import { ComplexFilter } from "../filter/complexFilter";
+import { AudioChannelsOutputOption } from "../option/audioChannelsOutputOption";
+import { AudioState } from "../state/audioState";
+import { AudioBitrateOutputOption } from "../option/audioBitrateOutputOption";
+import { AudioBufferSizeOutputOption } from "../option/audioBufferSizeOutputOption";
+import { AudioSampleRateOutputOption } from "../option/audioSampleRateOutputOption";
+import { AudioPadFilter } from "../filter/audioPadFilter";
 
 export abstract class PipelineBuilderBase {
     constructor(protected videoInputFile: VideoInputFile, private audioInputFile: AudioInputFile | null) {}
@@ -88,8 +94,7 @@ export abstract class PipelineBuilderBase {
         if (this.audioInputFile == null) {
             pipelineSteps.push(new EncoderCopyAudio());
         } else {
-            // TODO: build audio pipeline
-            pipelineSteps.push(new EncoderAc3());
+            this.buildAudioPipeline(this.audioInputFile.desiredState, pipelineSteps);
         }
 
         this.setDoNotMapMetadata(ffmpegState, pipelineSteps);
@@ -289,6 +294,51 @@ export abstract class PipelineBuilderBase {
     private setVideoBufferSizeOutput(desiredState: FrameState, pipelineSteps: Array<PipelineStep>): void {
         if (desiredState.videoBufferSize != null) {
             pipelineSteps.push(new VideoBufferSizeOutputOption(desiredState.videoBufferSize));
+        }
+    }
+
+    private buildAudioPipeline(desiredState: AudioState, pipelineSteps: Array<PipelineStep>): void {
+        const encoder = new AudioEncoder(desiredState.audioEncoder);
+        pipelineSteps.push(encoder);
+
+        this.setAudioChannels(desiredState, pipelineSteps);
+        this.setAudioBitrate(desiredState, pipelineSteps);
+        this.setAudioBufferSize(desiredState, pipelineSteps);
+        this.setAudioSampleRate(desiredState, pipelineSteps);
+        // TODO: this.setAudioVolume();
+        this.setAudioPad(desiredState);
+    }
+
+    private setAudioChannels(desiredState: AudioState, pipelineSteps: Array<PipelineStep>): void {
+        const audioStream = this.audioInputFile?.audioStreams.at(0);
+        if (audioStream != null) {
+            pipelineSteps.push(
+                new AudioChannelsOutputOption(audioStream.codec, audioStream.channels, desiredState.audioChannels)
+            );
+        }
+    }
+
+    private setAudioBitrate(desiredState: AudioState, pipelineSteps: Array<PipelineStep>): void {
+        if (desiredState.audioBitrate != null) {
+            pipelineSteps.push(new AudioBitrateOutputOption(desiredState.audioBitrate));
+        }
+    }
+
+    private setAudioBufferSize(desiredState: AudioState, pipelineSteps: Array<PipelineStep>): void {
+        if (desiredState.audioBufferSize != null) {
+            pipelineSteps.push(new AudioBufferSizeOutputOption(desiredState.audioBufferSize));
+        }
+    }
+
+    private setAudioSampleRate(desiredState: AudioState, pipelineSteps: Array<PipelineStep>): void {
+        if (desiredState.audioSampleRate != null) {
+            pipelineSteps.push(new AudioSampleRateOutputOption(desiredState.audioSampleRate));
+        }
+    }
+
+    private setAudioPad(desiredState: AudioState): void {
+        if (desiredState.audioDuration != null && this.audioInputFile != null) {
+            this.audioInputFile.filterSteps.push(new AudioPadFilter(desiredState.audioDuration));
         }
     }
 }
