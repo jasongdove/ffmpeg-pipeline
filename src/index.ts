@@ -9,3 +9,4 @@ export { VideoFormat } from "./format/videoFormat";
 export { CommandGenerator } from "./commandGenerator";
 export { AudioState } from "./state/audioState";
 export { HardwareAccelerationMode } from "./hardwareAccelerationMode";
+export { UnknownPixelFormat } from "./format/unknownPixelFormat";

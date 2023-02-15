@@ -1,4 +1,10 @@
-import { AudioState, CommandGenerator, HardwareAccelerationMode, PipelineBuilderFactory } from "../src/index";
+import {
+    AudioState,
+    CommandGenerator,
+    HardwareAccelerationMode,
+    PipelineBuilderFactory,
+    UnknownPixelFormat,
+} from "../src/index";
 import { AudioInputFile, VideoInputFile } from "../src/inputFile";
 import { FFmpegState } from "../src/ffmpegState";
 import { FrameState } from "../src/frameState";
@@ -8,7 +14,8 @@ import { FrameSize } from "../src/frameSize";
 
 describe("CommandGenerator", () => {
     it("should generate arguments", () => {
-        const videoStream = new VideoStream(1, "hevc", new FrameSize(640, 480), false, "");
+        const pixelFormat = new UnknownPixelFormat("yuv420p", "yuv420p", 8);
+        const videoStream = new VideoStream(1, "h264", pixelFormat, new FrameSize(640, 480), false, "");
         const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(videoStream));
 
         const audioStream = new AudioStream(2, "flac", 6);

@@ -29,4 +29,17 @@ export abstract class DecoderBase implements Decoder {
     nextState(currentState: FrameState): void {
         currentState.frameDataLocation = this.outputFrameDataLocation;
     }
+
+    protected inputBitDepth(inputFile: InputFile): number {
+        let bitDepth = 8;
+
+        if (inputFile instanceof VideoInputFile) {
+            const stream = (inputFile as VideoInputFile).videoStreams[0];
+            if (stream.pixelFormat != null) {
+                bitDepth = stream.pixelFormat.bitDepth;
+            }
+        }
+
+        return bitDepth;
+    }
 }
