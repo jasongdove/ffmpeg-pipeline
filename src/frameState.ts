@@ -11,4 +11,5 @@ export class FrameState {
     public videoBitrate: number | null = null;
     public videoBufferSize: number | null = null;
     public frameDataLocation: FrameDataLocation = FrameDataLocation.Unknown;
+    public interlaced: boolean = false;
 }

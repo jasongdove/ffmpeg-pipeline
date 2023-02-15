@@ -6,6 +6,7 @@ import { HardwareAccelerationMode } from "../hardwareAccelerationMode";
 import { PipelineStep } from "../interfaces/pipelineStep";
 import { VideoStream } from "../mediaStream";
 import { PipelineBuilderBase } from "./pipelineBuilderBase";
+import { YadifFilter } from "../filter/yadifFilter";
 import { ScaleFilter } from "../filter/scaleFilter";
 import { PadFilter } from "../filter/padFilter";
 
@@ -30,9 +31,8 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
         const currentState = { ...desiredState };
         currentState.frameDataLocation = FrameDataLocation.Software;
 
-        // set deinterlace
-
-        this.setScale(videoStream, desiredState, currentState);
+        this.setDeinterlace(currentState, desiredState);
+        this.setScale(videoStream, currentState, desiredState);
         this.setPad(currentState, desiredState);
 
         // set watermark
@@ -45,7 +45,13 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
         filterChain.videoFilterSteps.push(...this.videoInputFile.filterSteps);
     }
 
-    private setScale(videoStream: VideoStream, desiredState: FrameState, currentState: FrameState): void {
+    private setDeinterlace(currentState: FrameState, desiredState: FrameState): void {
+        if (desiredState.interlaced) {
+            this.videoInputFile.filterSteps.push(new YadifFilter(currentState));
+        }
+    }
+
+    private setScale(videoStream: VideoStream, currentState: FrameState, desiredState: FrameState): void {
         if (videoStream.frameSize.equals(desiredState.scaledSize) == false) {
             console.log("should scale...");
             const scaleStep = new ScaleFilter(currentState, desiredState.scaledSize, desiredState.paddedSize);
