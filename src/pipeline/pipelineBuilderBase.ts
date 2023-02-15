@@ -22,6 +22,12 @@ import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
 import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
+import { DoNotMapMetadataOutputOption } from "../option/doNotMapMetadataOutputOption";
+import { OutputFormatMpegTs } from "../option/outputFormatMpegTs";
+import { PipeProtocol } from "../option/pipeProtocol";
+import { MetadataServiceProviderOutputOption } from "../option/metadataServiceProviderOutputOption";
+import { MetadataServiceNameOutputOption } from "../option/metadataServiceNameOutputOption";
+import { MetadataAudioLanguageOutputOption } from "../option/metadataAudioLanguageOutputOption";
 
 export abstract class PipelineBuilderBase {
     constructor(private videoInputFile: Option<VideoInputFile>, private audioInputFile: Option<AudioInputFile>) {}
@@ -35,6 +41,9 @@ export abstract class PipelineBuilderBase {
         const ffmpegState = new FFmpegState();
         ffmpegState.start = some("01:00:00");
         ffmpegState.finish = some("00:00:22");
+        ffmpegState.metadataServiceProvider = some("service-provider");
+        ffmpegState.metadataServiceName = some("service-name");
+        ffmpegState.metadataAudioLanguage = some("en");
 
         const desiredState = new FrameState();
         desiredState.realtime = true;
@@ -67,7 +76,17 @@ export abstract class PipelineBuilderBase {
 
         if (isNone(this.audioInputFile)) {
             pipelineSteps.push(new EncoderCopyAudio());
+        } else {
+            // TODO: build audio pipeline
         }
+
+        this.setDoNotMapMetadata(ffmpegState, pipelineSteps);
+        this.setMetadataServiceProvider(ffmpegState, pipelineSteps);
+        this.setMetadataServiceName(ffmpegState, pipelineSteps);
+        this.setMetadataAudioLanguage(ffmpegState, pipelineSteps);
+        this.setOutputFormat(pipelineSteps);
+
+        // TODO: complex filter
 
         return new FFmpegPipeline(pipelineSteps);
     }
@@ -125,5 +144,45 @@ export abstract class PipelineBuilderBase {
                 (f) => pipelineSteps.push(new TimeLimitOutputOption(f))
             )
         );
+    }
+
+    setDoNotMapMetadata(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
+        if (ffmpegState.doNotMapMetadata) {
+            pipelineSteps.push(new DoNotMapMetadataOutputOption());
+        }
+    }
+
+    setMetadataServiceProvider(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
+        pipe(
+            ffmpegState.metadataServiceProvider,
+            match(
+                () => {},
+                (msp) => pipelineSteps.push(new MetadataServiceProviderOutputOption(msp))
+            )
+        );
+    }
+
+    setMetadataServiceName(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
+        pipe(
+            ffmpegState.metadataServiceName,
+            match(
+                () => {},
+                (msn) => pipelineSteps.push(new MetadataServiceNameOutputOption(msn))
+            )
+        );
+    }
+
+    setMetadataAudioLanguage(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
+        pipe(
+            ffmpegState.metadataAudioLanguage,
+            match(
+                () => {},
+                (mal) => pipelineSteps.push(new MetadataAudioLanguageOutputOption(mal))
+            )
+        );
+    }
+
+    setOutputFormat(pipelineSteps: Array<PipelineStep>): void {
+        pipelineSteps.push(new OutputFormatMpegTs(), new PipeProtocol());
     }
 }
