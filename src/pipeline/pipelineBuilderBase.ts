@@ -1,4 +1,5 @@
-import { getOrElse } from "fp-ts/lib/Option";
+import { getOrElse, match, Option, some } from "fp-ts/lib/Option";
+import { pipe } from "fp-ts/function";
 
 import { FFmpegPipeline } from "../ffmpegPipeline";
 import { PipelineStep } from "../interfaces/pipelineStep";
@@ -16,8 +17,12 @@ import { ThreadCountOption } from "../option/threadCountOption";
 import { NoSceneDetectOutputOption } from "../option/noSceneDetectOutputOption";
 import { VideoStream } from "../mediaStream";
 import { VideoFormat } from "../format/videoFormat";
+import { StreamSeekInputOption } from "../option/streamSeekInputOption";
+import { AudioInputFile, VideoInputFile } from "../inputFile";
 
 export abstract class PipelineBuilderBase {
+    constructor(private videoInputFile: Option<VideoInputFile>, private audioInputFile: Option<AudioInputFile>) {}
+
     build(): FFmpegPipeline {
         // dummy data for testing
         const videoStream = new VideoStream();
@@ -25,6 +30,8 @@ export abstract class PipelineBuilderBase {
 
         // more dummy data
         const ffmpegState = new FFmpegState();
+        ffmpegState.start = some("01:00:00");
+
         const desiredState = new FrameState();
         desiredState.realtime = true;
         desiredState.videoFormat = "h264";
@@ -45,6 +52,7 @@ export abstract class PipelineBuilderBase {
 
         this.setThreadCount(ffmpegState, desiredState, pipelineSteps);
         this.setSceneDetect(videoStream, desiredState, pipelineSteps);
+        this.setStreamSeek(ffmpegState);
 
         return new FFmpegPipeline(pipelineSteps);
     }
@@ -66,6 +74,31 @@ export abstract class PipelineBuilderBase {
             pipelineSteps.push(new NoSceneDetectOutputOption(1_000_000_000));
         } else {
             pipelineSteps.push(new NoSceneDetectOutputOption(0));
+        }
+    }
+
+    setStreamSeek(ffmpegState: FFmpegState): void {
+        // TODO: is this right? what format do we get the start time from dtv?
+        const start = pipe(
+            ffmpegState.start,
+            getOrElse(() => "00:00:00")
+        );
+        if (start != "00:00:00") {
+            const option = new StreamSeekInputOption(start);
+            pipe(
+                this.audioInputFile,
+                match(
+                    () => {},
+                    (aif) => aif.addOption(option)
+                )
+            );
+            pipe(
+                this.videoInputFile,
+                match(
+                    () => {},
+                    (vif) => vif.addOption(option)
+                )
+            );
         }
     }
 }
