@@ -8,7 +8,7 @@ import { FrameSize } from "../src/frameSize";
 
 describe("CommandGenerator", () => {
     it("should generate arguments", () => {
-        const videoStream = new VideoStream(1, "hevc", new FrameSize(1920, 1080), false, "");
+        const videoStream = new VideoStream(1, "hevc", new FrameSize(640, 480), false, "");
         const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(videoStream));
 
         const audioStream = new AudioStream(2, "flac", 2);

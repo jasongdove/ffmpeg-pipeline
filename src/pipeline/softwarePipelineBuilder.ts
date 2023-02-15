@@ -7,6 +7,7 @@ import { PipelineStep } from "../interfaces/pipelineStep";
 import { VideoStream } from "../mediaStream";
 import { PipelineBuilderBase } from "./pipelineBuilderBase";
 import { ScaleFilter } from "../filter/scaleFilter";
+import { PadFilter } from "../filter/padFilter";
 
 export class SoftwarePipelineBuilder extends PipelineBuilderBase {
     protected setAccelState(ffmpegState: FFmpegState): void {
@@ -31,10 +32,9 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
 
         // set deinterlace
 
-        // set scale
         this.setScale(videoStream, desiredState, currentState);
+        this.setPad(currentState, desiredState);
 
-        // set pad
         // set watermark
 
         // apply encoder
@@ -53,6 +53,16 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
             scaleStep.nextState(currentState);
 
             this.videoInputFile.filterSteps.push(scaleStep);
+        }
+    }
+
+    private setPad(currentState: FrameState, desiredState: FrameState): void {
+        if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
+            const padStep = new PadFilter(currentState, desiredState.paddedSize);
+
+            padStep.nextState(currentState);
+
+            this.videoInputFile.filterSteps.push(padStep);
         }
     }
 }
