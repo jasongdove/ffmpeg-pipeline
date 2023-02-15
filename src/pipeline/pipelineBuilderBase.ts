@@ -21,6 +21,7 @@ import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
 import { EncoderAc3 } from "../encoder/encoderAc3";
 import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
+import { EncoderMpeg2Video } from "../encoder/encoderMpeg2Video";
 import { DoNotMapMetadataOutputOption } from "../option/doNotMapMetadataOutputOption";
 import { OutputFormatMpegTs } from "../option/outputFormatMpegTs";
 import { PipeProtocol } from "../option/pipeProtocol";
@@ -58,6 +59,7 @@ export abstract class PipelineBuilderBase {
             pipelineSteps.push(new EncoderCopyVideo());
         } else {
             // TODO: build video pipeline
+            pipelineSteps.push(new EncoderMpeg2Video());
         }
 
         if (this.audioInputFile == null) {
