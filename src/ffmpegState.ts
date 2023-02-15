@@ -1,11 +1,9 @@
-import { Option, none } from "fp-ts/Option";
-
 export class FFmpegState {
-    public threadCount: Option<number> = none;
-    public start: Option<string> = none;
-    public finish: Option<string> = none;
+    public threadCount: number | null = null;
+    public start: string | null = null;
+    public finish: string | null = null;
     public doNotMapMetadata: boolean = true;
-    public metadataServiceProvider: Option<string> = none;
-    public metadataServiceName: Option<string> = none;
-    public metadataAudioLanguage: Option<string> = none;
+    public metadataServiceProvider: string | null = null;
+    public metadataServiceName: string | null = null;
+    public metadataAudioLanguage: string | null = null;
 }

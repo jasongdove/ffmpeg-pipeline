@@ -1,6 +1,3 @@
-import { getOrElse, match, Option, isNone } from "fp-ts/lib/Option";
-import { pipe } from "fp-ts/function";
-
 import { FFmpegPipeline } from "../ffmpegPipeline";
 import { PipelineStep } from "../interfaces/pipelineStep";
 import { ClosedGopOutputOption } from "../option/closedGopOutputOption";
@@ -30,7 +27,7 @@ import { MetadataServiceNameOutputOption } from "../option/metadataServiceNameOu
 import { MetadataAudioLanguageOutputOption } from "../option/metadataAudioLanguageOutputOption";
 
 export abstract class PipelineBuilderBase {
-    constructor(private videoInputFile: VideoInputFile, private audioInputFile: Option<AudioInputFile>) {}
+    constructor(private videoInputFile: VideoInputFile, private audioInputFile: AudioInputFile | null) {}
 
     build(ffmpegState: FFmpegState, desiredState: FrameState): FFmpegPipeline {
         const pipelineSteps = new Array<PipelineStep>(
@@ -60,7 +57,7 @@ export abstract class PipelineBuilderBase {
             // TODO: build video pipeline
         }
 
-        if (isNone(this.audioInputFile)) {
+        if (this.audioInputFile == null) {
             pipelineSteps.push(new EncoderCopyAudio());
         } else {
             // TODO: build audio pipeline
@@ -82,8 +79,7 @@ export abstract class PipelineBuilderBase {
             console.log("Forcing 1 ffmpeg thread due to buggy combination of stream seek and realtime output");
             pipelineSteps.unshift(new ThreadCountOption(1));
         } else {
-            const threadCount = getOrElse(() => 0)(ffmpegState.threadCount);
-            pipelineSteps.unshift(new ThreadCountOption(threadCount));
+            pipelineSteps.unshift(new ThreadCountOption(ffmpegState.threadCount ?? 0));
         }
     }
 
@@ -99,32 +95,21 @@ export abstract class PipelineBuilderBase {
 
     setStreamSeek(ffmpegState: FFmpegState): void {
         // TODO: is this right? what format do we get the start time from dtv?
-        const start = pipe(
-            ffmpegState.start,
-            getOrElse(() => "00:00:00")
-        );
-        if (start != "00:00:00") {
-            const option = new StreamSeekInputOption(start);
-            pipe(
-                this.audioInputFile,
-                match(
-                    () => {},
-                    (aif) => aif.addOption(option)
-                )
-            );
+        if (ffmpegState.start != null) {
+            const option = new StreamSeekInputOption(ffmpegState.start);
+
+            if (this.audioInputFile != null) {
+                this.audioInputFile.addOption(option);
+            }
 
             this.videoInputFile.addOption(option);
         }
     }
 
     setTimeLimit(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
-        pipe(
-            ffmpegState.finish,
-            match(
-                () => {},
-                (f) => pipelineSteps.push(new TimeLimitOutputOption(f))
-            )
-        );
+        if (ffmpegState.finish != null) {
+            pipelineSteps.push(new TimeLimitOutputOption(ffmpegState.finish));
+        }
     }
 
     setDoNotMapMetadata(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
@@ -134,33 +119,21 @@ export abstract class PipelineBuilderBase {
     }
 
     setMetadataServiceProvider(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
-        pipe(
-            ffmpegState.metadataServiceProvider,
-            match(
-                () => {},
-                (msp) => pipelineSteps.push(new MetadataServiceProviderOutputOption(msp))
-            )
-        );
+        if (ffmpegState.metadataServiceProvider != null) {
+            pipelineSteps.push(new MetadataServiceProviderOutputOption(ffmpegState.metadataServiceProvider));
+        }
     }
 
     setMetadataServiceName(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
-        pipe(
-            ffmpegState.metadataServiceName,
-            match(
-                () => {},
-                (msn) => pipelineSteps.push(new MetadataServiceNameOutputOption(msn))
-            )
-        );
+        if (ffmpegState.metadataServiceName != null) {
+            pipelineSteps.push(new MetadataServiceNameOutputOption(ffmpegState.metadataServiceName));
+        }
     }
 
     setMetadataAudioLanguage(ffmpegState: FFmpegState, pipelineSteps: Array<PipelineStep>) {
-        pipe(
-            ffmpegState.metadataAudioLanguage,
-            match(
-                () => {},
-                (mal) => pipelineSteps.push(new MetadataAudioLanguageOutputOption(mal))
-            )
-        );
+        if (ffmpegState.metadataAudioLanguage != null) {
+            pipelineSteps.push(new MetadataAudioLanguageOutputOption(ffmpegState.metadataAudioLanguage));
+        }
     }
 
     setOutputFormat(pipelineSteps: Array<PipelineStep>): void {

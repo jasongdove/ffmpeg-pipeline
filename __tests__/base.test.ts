@@ -1,4 +1,3 @@
-import { none, some, Option } from "fp-ts/lib/Option";
 import { CommandGenerator, SoftwarePipelineBuilder } from "../src/index";
 import { AudioInputFile, VideoInputFile } from "../src/inputFile";
 import { FFmpegState } from "../src/ffmpegState";
@@ -9,15 +8,15 @@ import { VideoStream } from "../src/mediaStream";
 describe("CommandGenerator", () => {
     it("should generate arguments", () => {
         const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(new VideoStream("hevc")));
-        const audioInputFile: Option<AudioInputFile> = none;
+        const audioInputFile: AudioInputFile | null = null;
 
         // more dummy data
         const ffmpegState = new FFmpegState();
-        ffmpegState.start = some("01:00:00");
-        ffmpegState.finish = some("00:00:22");
-        ffmpegState.metadataServiceProvider = some("service-provider");
-        ffmpegState.metadataServiceName = some("service-name");
-        ffmpegState.metadataAudioLanguage = some("en");
+        ffmpegState.start = "01:00:00";
+        ffmpegState.finish = "00:00:22";
+        ffmpegState.metadataServiceProvider = "service-provider";
+        ffmpegState.metadataServiceName = "service-name";
+        ffmpegState.metadataAudioLanguage = "en";
 
         const desiredState = new FrameState();
         desiredState.realtime = true;

@@ -2,6 +2,11 @@ import { VideoInputFile } from "./inputFile";
 import { PipelineStep } from "./interfaces/pipelineStep";
 
 export { SoftwarePipelineBuilder } from "./pipeline/softwarePipelineBuilder";
+export { VideoInputFile } from "./inputFile";
+export { VideoStream } from "./mediaStream";
+export { FFmpegState } from "./ffmpegState";
+export { FrameState } from "./frameState";
+export { VideoFormat } from "./format/videoFormat";
 
 export class CommandGenerator {
     generateArguments(videoInputFile: VideoInputFile, pipelineSteps: Array<PipelineStep>): string {
