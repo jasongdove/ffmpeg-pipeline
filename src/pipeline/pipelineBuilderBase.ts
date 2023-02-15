@@ -20,6 +20,7 @@ import { VideoFormat } from "../format/videoFormat";
 import { StreamSeekInputOption } from "../option/streamSeekInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
+import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
 
 export abstract class PipelineBuilderBase {
     constructor(private videoInputFile: Option<VideoInputFile>, private audioInputFile: Option<AudioInputFile>) {}
@@ -36,7 +37,7 @@ export abstract class PipelineBuilderBase {
 
         const desiredState = new FrameState();
         desiredState.realtime = true;
-        desiredState.videoFormat = "h264";
+        desiredState.videoFormat = VideoFormat.Copy;
 
         const pipelineSteps = new Array<PipelineStep>(
             // default input options
@@ -56,6 +57,12 @@ export abstract class PipelineBuilderBase {
         this.setSceneDetect(videoStream, desiredState, pipelineSteps);
         this.setStreamSeek(ffmpegState);
         this.setTimeLimit(ffmpegState, pipelineSteps);
+
+        if (desiredState.videoFormat == VideoFormat.Copy) {
+            pipelineSteps.push(new EncoderCopyVideo());
+        } else {
+            // TODO: build video pipeline
+        }
 
         return new FFmpegPipeline(pipelineSteps);
     }
