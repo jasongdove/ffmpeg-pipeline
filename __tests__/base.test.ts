@@ -3,12 +3,16 @@ import { AudioInputFile, VideoInputFile } from "../src/inputFile";
 import { FFmpegState } from "../src/ffmpegState";
 import { FrameState } from "../src/frameState";
 import { VideoFormat } from "../src/format/videoFormat";
-import { VideoStream } from "../src/mediaStream";
+import { AudioStream, VideoStream } from "../src/mediaStream";
+import { FrameSize } from "../src/frameSize";
 
 describe("CommandGenerator", () => {
     it("should generate arguments", () => {
-        const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(new VideoStream("hevc")));
-        const audioInputFile: AudioInputFile | null = new AudioInputFile("");
+        const videoStream = new VideoStream(1, "hevc", new FrameSize(1920, 1080), false, "");
+        const videoInputFile = new VideoInputFile("video", new Array<VideoStream>(videoStream));
+
+        const audioStream = new AudioStream(2, "flac", 2);
+        const audioInputFile: AudioInputFile | null = new AudioInputFile("audio", new Array<AudioStream>(audioStream));
 
         // more dummy data
         const ffmpegState = new FFmpegState();
@@ -18,7 +22,9 @@ describe("CommandGenerator", () => {
         ffmpegState.metadataServiceName = "service-name";
         ffmpegState.metadataAudioLanguage = "en";
 
-        const desiredState = new FrameState();
+        const targetResolution = new FrameSize(1280, 720);
+        const squarePixelFrameSize = videoStream.squarePixelFrameSize(targetResolution);
+        const desiredState = new FrameState(squarePixelFrameSize, targetResolution, false);
         desiredState.realtime = true;
         desiredState.videoFormat = VideoFormat.Mpeg2Video;
 

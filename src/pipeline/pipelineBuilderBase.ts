@@ -49,6 +49,7 @@ import { EncoderLibx264 } from "../encoder/encoderLibx264";
 import { EncoderLibx265 } from "../encoder/encoderLibx265";
 import { EncoderMpeg2Video } from "../encoder/encoderMpeg2Video";
 import { EncoderImplicitVideo } from "../encoder/encoderImplicitVideo";
+import { ComplexFilter } from "../filter/complexFilter";
 
 export abstract class PipelineBuilderBase {
     constructor(protected videoInputFile: VideoInputFile, private audioInputFile: AudioInputFile | null) {}
@@ -97,7 +98,8 @@ export abstract class PipelineBuilderBase {
         this.setMetadataAudioLanguage(ffmpegState, pipelineSteps);
         this.setOutputFormat(pipelineSteps);
 
-        // TODO: complex filter
+        const complexFilter = new ComplexFilter(this.videoInputFile, this.audioInputFile, filterChain);
+        pipelineSteps.push(complexFilter);
 
         return new FFmpegPipeline(pipelineSteps);
     }
@@ -187,8 +189,6 @@ export abstract class PipelineBuilderBase {
         pipelineSteps: Array<PipelineStep>,
         filterChain: FilterChain
     ): void {
-        // pipelineSteps.push(new EncoderMpeg2Video());
-
         this.setAccelState(ffmpegState);
 
         this.setDecoder(videoStream, ffmpegState, pipelineSteps);

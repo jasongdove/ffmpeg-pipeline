@@ -1,6 +1,9 @@
 import { FrameDataLocation } from "./frameDataLocation";
+import { FrameSize } from "./frameSize";
 
 export class FrameState {
+    constructor(public scaledSize: FrameSize, public paddedSize: FrameSize, public isAnamorphic: boolean) {}
+
     public realtime: boolean = false;
     public videoFormat: string = "mpeg2video";
     public frameRate: number | null = null;
