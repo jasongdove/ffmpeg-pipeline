@@ -1,4 +1,4 @@
-import { AudioState, CommandGenerator, SoftwarePipelineBuilder } from "../src/index";
+import { AudioState, CommandGenerator, HardwareAccelerationMode, PipelineBuilderFactory } from "../src/index";
 import { AudioInputFile, VideoInputFile } from "../src/inputFile";
 import { FFmpegState } from "../src/ffmpegState";
 import { FrameState } from "../src/frameState";
@@ -37,9 +37,13 @@ describe("CommandGenerator", () => {
         const squarePixelFrameSize = videoStream.squarePixelFrameSize(targetResolution);
         const desiredState = new FrameState(squarePixelFrameSize, targetResolution, false);
         desiredState.realtime = true;
-        desiredState.videoFormat = VideoFormat.Mpeg2Video;
+        desiredState.videoFormat = VideoFormat.Hevc;
 
-        const builder = new SoftwarePipelineBuilder(videoInputFile, audioInputFile);
+        const builder = PipelineBuilderFactory.getBuilder(
+            HardwareAccelerationMode.Nvenc,
+            videoInputFile,
+            audioInputFile
+        );
         const steps = builder.build(ffmpegState, desiredState).pipelineSteps;
 
         const result = new CommandGenerator().generateArguments(videoInputFile, steps);

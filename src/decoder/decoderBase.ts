@@ -2,6 +2,7 @@ import { Decoder } from "../interfaces/decoder";
 import { FrameDataLocation } from "../frameDataLocation";
 import { AudioInputFile, VideoInputFile, InputFile } from "../inputFile";
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
+import { FrameState } from "../frameState";
 
 export abstract class DecoderBase implements Decoder {
     abstract name: string;
@@ -23,5 +24,9 @@ export abstract class DecoderBase implements Decoder {
 
     inputOptions(_inputFile: InputFile): Array<string> {
         return new Array<string>("-c:v", this.name);
+    }
+
+    nextState(currentState: FrameState): void {
+        currentState.frameDataLocation = this.outputFrameDataLocation;
     }
 }

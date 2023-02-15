@@ -1,3 +1,4 @@
+import { PipelineBuilder } from "../interfaces/pipelineBuilder";
 import { FFmpegPipeline } from "../ffmpegPipeline";
 import { PipelineStep } from "../interfaces/pipelineStep";
 import { ClosedGopOutputOption } from "../option/closedGopOutputOption";
@@ -57,7 +58,7 @@ import { AudioBufferSizeOutputOption } from "../option/audioBufferSizeOutputOpti
 import { AudioSampleRateOutputOption } from "../option/audioSampleRateOutputOption";
 import { AudioPadFilter } from "../filter/audioPadFilter";
 
-export abstract class PipelineBuilderBase {
+export abstract class PipelineBuilderBase implements PipelineBuilder {
     constructor(protected videoInputFile: VideoInputFile, private audioInputFile: AudioInputFile | null) {}
 
     build(ffmpegState: FFmpegState, desiredState: FrameState): FFmpegPipeline {
@@ -194,7 +195,7 @@ export abstract class PipelineBuilderBase {
         pipelineSteps: Array<PipelineStep>,
         filterChain: FilterChain
     ): void {
-        this.setAccelState(ffmpegState);
+        this.setAccelState(videoStream, ffmpegState, desiredState, pipelineSteps);
 
         this.setDecoder(videoStream, ffmpegState, pipelineSteps);
 
@@ -206,7 +207,12 @@ export abstract class PipelineBuilderBase {
         this.setVideoFilters(videoStream, ffmpegState, desiredState, pipelineSteps, filterChain);
     }
 
-    protected abstract setAccelState(ffmpegState: FFmpegState): void;
+    protected abstract setAccelState(
+        videoStream: VideoStream,
+        ffmpegState: FFmpegState,
+        desiredState: FrameState,
+        pipelineSteps: Array<PipelineStep>
+    ): void;
 
     protected abstract setDecoder(
         videoStream: VideoStream,

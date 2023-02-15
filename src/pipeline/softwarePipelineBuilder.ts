@@ -11,7 +11,12 @@ import { ScaleFilter } from "../filter/scaleFilter";
 import { PadFilter } from "../filter/padFilter";
 
 export class SoftwarePipelineBuilder extends PipelineBuilderBase {
-    protected setAccelState(ffmpegState: FFmpegState): void {
+    protected setAccelState(
+        _videoStream: VideoStream,
+        ffmpegState: FFmpegState,
+        _desiredState: FrameState,
+        _pipelineSteps: Array<PipelineStep>
+    ): void {
         ffmpegState.decoderHardwareAccelerationMode = HardwareAccelerationMode.None;
         ffmpegState.encoderHardwareAccelerationMode = HardwareAccelerationMode.None;
     }
@@ -25,11 +30,14 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
         videoStream: VideoStream,
         ffmpegState: FFmpegState,
         desiredState: FrameState,
-        _pipelineSteps: PipelineStep[],
+        pipelineSteps: PipelineStep[],
         filterChain: FilterChain
     ): void {
         const currentState = { ...desiredState };
         currentState.frameDataLocation = FrameDataLocation.Software;
+        currentState.isAnamorphic = videoStream.isAnamorphic;
+        currentState.scaledSize = videoStream.frameSize;
+        currentState.paddedSize = videoStream.frameSize;
 
         this.setDeinterlace(ffmpegState, currentState, desiredState);
         this.setScale(videoStream, ffmpegState, currentState, desiredState);
@@ -39,7 +47,7 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
 
         // apply encoder
         const encoder = this.getEncoder(ffmpegState, currentState, desiredState);
-        _pipelineSteps.push(encoder);
+        pipelineSteps.push(encoder);
         this.videoInputFile.filterSteps.push(encoder);
 
         filterChain.videoFilterSteps.push(...this.videoInputFile.filterSteps);
