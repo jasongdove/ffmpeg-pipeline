@@ -16,7 +16,8 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "docs": "typedoc src/index.ts --out docs",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "postinstall": "npm run build"
   },
   "main": "dist/template-ts.cjs.js",
   "module": "dist/template-ts.esm.js",
