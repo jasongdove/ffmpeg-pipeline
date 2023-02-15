@@ -19,6 +19,7 @@ import { RealtimeInputOption } from "../option/realtimeInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
 import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
+import { EncoderAc3 } from "../encoder/encoderAc3";
 import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
 import { DoNotMapMetadataOutputOption } from "../option/doNotMapMetadataOutputOption";
 import { OutputFormatMpegTs } from "../option/outputFormatMpegTs";
@@ -63,6 +64,7 @@ export abstract class PipelineBuilderBase {
             pipelineSteps.push(new EncoderCopyAudio());
         } else {
             // TODO: build audio pipeline
+            pipelineSteps.push(new EncoderAc3());
         }
 
         this.setDoNotMapMetadata(ffmpegState, pipelineSteps);
