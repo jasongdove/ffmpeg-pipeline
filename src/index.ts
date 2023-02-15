@@ -1,40 +1,24 @@
-import { none, some, Option, match } from "fp-ts/lib/Option";
-import { pipe } from "fp-ts/function";
+import { VideoInputFile } from "./inputFile";
+import { PipelineStep } from "./interfaces/pipelineStep";
 
-import { AudioInputFile, VideoInputFile } from "./inputFile";
-import { SoftwarePipelineBuilder } from "./pipeline/softwarePipelineBuilder";
+export { SoftwarePipelineBuilder } from "./pipeline/softwarePipelineBuilder";
 
-export class Test {
-    build(): string {
-        const videoInputFile: Option<VideoInputFile> = some(new VideoInputFile("video"));
-        const audioInputFile: Option<AudioInputFile> = none;
-
-        const builder = new SoftwarePipelineBuilder(videoInputFile, audioInputFile);
-        const steps = builder.build().pipelineSteps;
-
+export class CommandGenerator {
+    generateArguments(videoInputFile: VideoInputFile, pipelineSteps: Array<PipelineStep>): string {
         const args = new Array<string>();
 
-        args.push(...steps.flatMap((s) => s.globalOptions));
+        args.push(...pipelineSteps.flatMap((s) => s.globalOptions));
 
         // TODO: input files
         const includedPaths = new Set<string>();
-        pipe(
-            videoInputFile,
-            match(
-                () => {},
-                (vif) => {
-                    includedPaths.add(vif.path);
 
-                    args.push(...vif.inputOptions.flatMap((s) => s.inputOptions(vif)));
-
-                    args.push("-i", vif.path);
-                }
-            )
-        );
+        includedPaths.add(videoInputFile.path);
+        args.push(...videoInputFile.inputOptions.flatMap((s) => s.inputOptions(videoInputFile)));
+        args.push("-i", videoInputFile.path);
 
         // TODO: complex filter
 
-        args.push(...steps.flatMap((s) => s.outputOptions));
+        args.push(...pipelineSteps.flatMap((s) => s.outputOptions));
 
         return args.join(" ");
     }

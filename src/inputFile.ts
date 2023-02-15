@@ -1,5 +1,6 @@
 import { InputOption } from "./interfaces/inputOption";
 import { PipelineFilterStep } from "./interfaces/pipelineFilterStep";
+import { VideoStream } from "./mediaStream";
 
 export abstract class InputFile {
     public inputOptions = new Array<InputOption>();
@@ -19,7 +20,7 @@ export class AudioInputFile extends InputFile {
 }
 
 export class VideoInputFile extends InputFile {
-    constructor(public path: string) {
+    constructor(public path: string, public videoStreams: Array<VideoStream>) {
         super();
     }
 

@@ -1,4 +1,4 @@
-import { getOrElse, match, Option, some, isNone } from "fp-ts/lib/Option";
+import { getOrElse, match, Option, isNone } from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/function";
 
 import { FFmpegPipeline } from "../ffmpegPipeline";
@@ -30,25 +30,9 @@ import { MetadataServiceNameOutputOption } from "../option/metadataServiceNameOu
 import { MetadataAudioLanguageOutputOption } from "../option/metadataAudioLanguageOutputOption";
 
 export abstract class PipelineBuilderBase {
-    constructor(private videoInputFile: Option<VideoInputFile>, private audioInputFile: Option<AudioInputFile>) {}
+    constructor(private videoInputFile: VideoInputFile, private audioInputFile: Option<AudioInputFile>) {}
 
-    build(): FFmpegPipeline {
-        // dummy data for testing
-        const videoStream = new VideoStream();
-        videoStream.codec = "hevc";
-
-        // more dummy data
-        const ffmpegState = new FFmpegState();
-        ffmpegState.start = some("01:00:00");
-        ffmpegState.finish = some("00:00:22");
-        ffmpegState.metadataServiceProvider = some("service-provider");
-        ffmpegState.metadataServiceName = some("service-name");
-        ffmpegState.metadataAudioLanguage = some("en");
-
-        const desiredState = new FrameState();
-        desiredState.realtime = true;
-        desiredState.videoFormat = VideoFormat.Copy;
-
+    build(ffmpegState: FFmpegState, desiredState: FrameState): FFmpegPipeline {
         const pipelineSteps = new Array<PipelineStep>(
             // default input options
             new NoStandardInputOption(),
@@ -62,6 +46,8 @@ export abstract class PipelineBuilderBase {
             new FastStartOutputOption(),
             new ClosedGopOutputOption()
         );
+
+        const videoStream = this.videoInputFile.videoStreams[0];
 
         this.setThreadCount(ffmpegState, desiredState, pipelineSteps);
         this.setSceneDetect(videoStream, desiredState, pipelineSteps);
@@ -93,7 +79,7 @@ export abstract class PipelineBuilderBase {
 
     setThreadCount(ffmpegState: FFmpegState, desiredState: FrameState, pipelineSteps: Array<PipelineStep>): void {
         if (desiredState.realtime) {
-            console.log("Forcing 1 ffmpeg thread due to buggy combination of stream seek and realtiem output");
+            console.log("Forcing 1 ffmpeg thread due to buggy combination of stream seek and realtime output");
             pipelineSteps.unshift(new ThreadCountOption(1));
         } else {
             const threadCount = getOrElse(() => 0)(ffmpegState.threadCount);
@@ -126,13 +112,8 @@ export abstract class PipelineBuilderBase {
                     (aif) => aif.addOption(option)
                 )
             );
-            pipe(
-                this.videoInputFile,
-                match(
-                    () => {},
-                    (vif) => vif.addOption(option)
-                )
-            );
+
+            this.videoInputFile.addOption(option);
         }
     }
 
