@@ -1,4 +1,4 @@
-import { getOrElse, match, Option, some } from "fp-ts/lib/Option";
+import { getOrElse, match, Option, some, isNone } from "fp-ts/lib/Option";
 import { pipe } from "fp-ts/function";
 
 import { FFmpegPipeline } from "../ffmpegPipeline";
@@ -20,6 +20,7 @@ import { VideoFormat } from "../format/videoFormat";
 import { StreamSeekInputOption } from "../option/streamSeekInputOption";
 import { AudioInputFile, VideoInputFile } from "../inputFile";
 import { TimeLimitOutputOption } from "../option/timeLimitOutputOption";
+import { EncoderCopyAudio } from "../encoder/encoderCopyAudio";
 import { EncoderCopyVideo } from "../encoder/encoderCopyVideo";
 
 export abstract class PipelineBuilderBase {
@@ -62,6 +63,10 @@ export abstract class PipelineBuilderBase {
             pipelineSteps.push(new EncoderCopyVideo());
         } else {
             // TODO: build video pipeline
+        }
+
+        if (isNone(this.audioInputFile)) {
+            pipelineSteps.push(new EncoderCopyAudio());
         }
 
         return new FFmpegPipeline(pipelineSteps);
