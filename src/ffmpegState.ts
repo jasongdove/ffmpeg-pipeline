@@ -1,3 +1,5 @@
+import { HardwareAccelerationMode } from "./hardwareAccelerationMode";
+
 export class FFmpegState {
     public threadCount: number | null = null;
     public start: string | null = null;
@@ -6,4 +8,8 @@ export class FFmpegState {
     public metadataServiceProvider: string | null = null;
     public metadataServiceName: string | null = null;
     public metadataAudioLanguage: string | null = null;
+    public decoderHardwareAccelerationMode: HardwareAccelerationMode = HardwareAccelerationMode.None;
+    public encoderHardwareAccelerationMode: HardwareAccelerationMode = HardwareAccelerationMode.None;
+    public softwareScalingAlgorithm: string = "fast_bilinear";
+    public softwareDeinterlaceFilter: string = "yadif=1";
 }

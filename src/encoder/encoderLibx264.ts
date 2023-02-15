@@ -1,8 +1,8 @@
 import { StreamKind } from "../streamKind";
 import { EncoderBase } from "./encoderBase";
 
-export class EncoderAc3 extends EncoderBase {
+export class EncoderLibx264 extends EncoderBase {
     constructor() {
-        super("ac3", StreamKind.Audio);
+        super("libx264", StreamKind.Video);
     }
 }
