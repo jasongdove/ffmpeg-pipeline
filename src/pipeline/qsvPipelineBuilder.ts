@@ -169,7 +169,7 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         if (needsToScale && (onlySoftware || lotsOfSoftware)) {
             scaleStep = new ScaleFilter(ffmpegState, currentState, desiredState.scaledSize, desiredState.paddedSize);
         } else {
-            scaleStep = new ScaleQsvFilter(videoStream, currentState, desiredState.scaledSize, desiredState.paddedSize);
+            scaleStep = new ScaleQsvFilter(videoStream, currentState, desiredState.scaledSize);
         }
 
         if (!this.isNullOrWhitespace(scaleStep.filter)) {

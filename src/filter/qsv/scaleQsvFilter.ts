@@ -5,12 +5,7 @@ import { VideoStream } from "../../mediaStream";
 import { BaseFilter } from "../baseFilter";
 
 export class ScaleQsvFilter extends BaseFilter {
-    constructor(
-        private videoStream: VideoStream,
-        private currentState: FrameState,
-        private scaledSize: FrameSize,
-        private paddedSize: FrameSize
-    ) {
+    constructor(private videoStream: VideoStream, private currentState: FrameState, private scaledSize: FrameSize) {
         super();
     }
 
