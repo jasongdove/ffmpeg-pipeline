@@ -33,7 +33,7 @@ export class ScaleFilter extends BaseFilter {
 
         let scale: string;
         if (this.currentState.isAnamorphic) {
-            scale = `scale=iw*sar:ih,setsar=1,scale=${this.paddedSize.width}:${this.paddedSize.height}:flags=${this.paddedSize.height}:flags=${this.ffmpegState.softwareScalingAlgorithm}${aspectRatio}`;
+            scale = `scale=iw*sar:ih,setsar=1,scale=${this.paddedSize.width}:${this.paddedSize.height}:flags=${this.ffmpegState.softwareScalingAlgorithm}${aspectRatio}`;
         } else {
             scale = `scale=${this.paddedSize.width}:${this.paddedSize.height}:flags=${this.ffmpegState.softwareScalingAlgorithm}${aspectRatio},setsar=1`;
         }

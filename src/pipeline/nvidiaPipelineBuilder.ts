@@ -17,6 +17,12 @@ import { YadifCudaFilter } from "../filter/cuda/yadifCudaFilter";
 import { ScaleFilter } from "../filter/scaleFilter";
 import { ScaleCudaFilter } from "../filter/cuda/scaleCudaFilter";
 import { PadFilter } from "../filter/padFilter";
+import { Decoder } from "../interfaces/decoder";
+import { DecoderH264Cuvid } from "../decoder/cuvid/decoderH264Cuvid";
+import { DecoderHevcCuvid } from "../decoder/cuvid/decoderHevcCuvid";
+import { DecoderMpeg4Cuvid } from "../decoder/cuvid/decoderMpeg4Cuvid";
+import { DecoderVc1Cuvid } from "../decoder/cuvid/decoderVc1Cuvid";
+import { DecoderVp9Cuvid } from "../decoder/cuvid/decoderVp9Cuvid";
 
 export class NvidiaPipelineBuilder extends PipelineBuilderBase {
     protected setAccelState(
@@ -25,10 +31,14 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         desiredState: FrameState,
         pipelineSteps: Array<PipelineStep>
     ): void {
-        let canDecode = false;
+        let canDecode = true;
         const canEncode = true;
 
         // TODO: check whether can decode and can encode based on capabilities
+        // minimal check for now, h264_cuvid doesn't support 10-bit
+        if (videoStream.codec == VideoFormat.H264 && videoStream.pixelFormat?.bitDepth == 10) {
+            canDecode = false;
+        }
 
         // mpeg2_cuvid seems to have issues when yadif_cuda is used, so just use software decoding
         if (desiredState.interlaced && videoStream.codec == VideoFormat.Mpeg2Video) {
@@ -47,8 +57,32 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
             : HardwareAccelerationMode.None;
     }
 
-    protected setDecoder(videoStream: VideoStream, _ffmpegState: FFmpegState, _pipelineSteps: PipelineStep[]): void {
-        const decoder = this.getSoftwareDecoder(videoStream);
+    protected setDecoder(videoStream: VideoStream, ffmpegState: FFmpegState, _pipelineSteps: PipelineStep[]): void {
+        let decoder: Decoder | null = null;
+        if (ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc) {
+            switch (videoStream.codec) {
+                case VideoFormat.H264:
+                    decoder = new DecoderH264Cuvid(HardwareAccelerationMode.Nvenc);
+                    break;
+                case VideoFormat.Hevc:
+                    decoder = new DecoderHevcCuvid(HardwareAccelerationMode.Nvenc);
+                    break;
+                case VideoFormat.Mpeg4:
+                    decoder = new DecoderMpeg4Cuvid(HardwareAccelerationMode.Nvenc);
+                    break;
+                case VideoFormat.Vc1:
+                    decoder = new DecoderVc1Cuvid(HardwareAccelerationMode.Nvenc);
+                    break;
+                case VideoFormat.Vp9:
+                    decoder = new DecoderVp9Cuvid(HardwareAccelerationMode.Nvenc);
+                    break;
+            }
+        }
+
+        if (decoder == null) {
+            decoder = this.getSoftwareDecoder(videoStream);
+        }
+
         if (decoder != null) {
             this.videoInputFile.addOption(decoder);
         }

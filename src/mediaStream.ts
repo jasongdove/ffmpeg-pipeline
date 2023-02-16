@@ -1,5 +1,6 @@
 import { FrameSize } from "./frameSize";
 import { StreamKind } from "./streamKind";
+import { PixelFormat } from "./interfaces/pixelFormat";
 
 export class MediaStream {
     constructor(public index: number, public codec: string, public kind: StreamKind) {}
@@ -15,6 +16,7 @@ export class VideoStream extends MediaStream {
     constructor(
         index: number,
         codec: string,
+        public pixelFormat: PixelFormat | null,
         public frameSize: FrameSize,
         public isAnamorphic: boolean,
         private pixelAspectRatio: string
