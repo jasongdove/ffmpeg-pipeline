@@ -12,4 +12,5 @@ export class FFmpegState {
     public encoderHardwareAccelerationMode: HardwareAccelerationMode = HardwareAccelerationMode.None;
     public softwareScalingAlgorithm: string = "fast_bilinear";
     public softwareDeinterlaceFilter: string = "yadif=1";
+    public vaapiDevice: string | null = null;
 }

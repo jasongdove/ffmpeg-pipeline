@@ -4,7 +4,7 @@ import { FrameState } from "../frameState";
 import { BaseFilter } from "./baseFilter";
 
 export class DeinterlaceFilter extends BaseFilter {
-    constructor(private ffmpegState: FFmpegState, _currentState: FrameState) {
+    constructor(private ffmpegState: FFmpegState, private currentState: FrameState) {
         super();
     }
 
@@ -18,7 +18,9 @@ export class DeinterlaceFilter extends BaseFilter {
     private generateFilter(): string {
         const filter = this.ffmpegState.softwareDeinterlaceFilter;
 
-        // TODO: hwdownload if needed
+        if (this.currentState.frameDataLocation == FrameDataLocation.Hardware) {
+            return `hwdownload,${filter}`;
+        }
 
         return filter;
     }
