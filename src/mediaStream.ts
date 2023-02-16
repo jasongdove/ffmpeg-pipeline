@@ -19,7 +19,7 @@ export class VideoStream extends MediaStream {
         public pixelFormat: PixelFormat | null,
         public frameSize: FrameSize,
         public isAnamorphic: boolean,
-        private pixelAspectRatio: string
+        public pixelAspectRatio: string
     ) {
         super(index, codec, StreamKind.Video);
     }
