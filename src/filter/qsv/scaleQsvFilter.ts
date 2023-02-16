@@ -30,7 +30,7 @@ export class ScaleQsvFilter extends BaseFilter {
 
         if (this.currentState.scaledSize.equals(this.scaledSize) == false) {
             let squareScale = "";
-            const targetSize = `w=${this.paddedSize.width}:h=${this.paddedSize.height}`;
+            const targetSize = `w=${this.scaledSize.width}:h=${this.scaledSize.height}`;
             let format = "";
             const sar = this.videoStream.pixelAspectRatio.replace(":", "/");
             if (this.currentState.isAnamorphic) {

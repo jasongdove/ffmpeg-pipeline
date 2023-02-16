@@ -34,7 +34,7 @@ export class VideoStream extends MediaStream {
             const den = Number.parseFloat(split[1]);
 
             width = Math.floor((this.frameSize.width * num) / den);
-            height = Math.floor((this.frameSize.height * height) / den);
+            height = Math.floor((this.frameSize.height * num) / den);
         }
 
         const widthPercent = resolution.width / width;

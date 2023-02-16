@@ -98,7 +98,7 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         currentState.scaledSize = videoStream.frameSize;
         currentState.paddedSize = videoStream.frameSize;
         currentState.frameDataLocation =
-            ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc
+            ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Qsv
                 ? FrameDataLocation.Hardware
                 : FrameDataLocation.Software;
 
@@ -107,7 +107,7 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         this.setPad(currentState, desiredState);
 
         let encoder: Encoder | null = null;
-        if (ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc) {
+        if (ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.Qsv) {
             switch (desiredState.videoFormat) {
                 case VideoFormat.Hevc:
                     encoder = new EncoderHevcQsv();
