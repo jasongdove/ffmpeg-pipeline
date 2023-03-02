@@ -57,7 +57,11 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
             : HardwareAccelerationMode.None;
     }
 
-    protected setDecoder(videoStream: VideoStream, ffmpegState: FFmpegState, _pipelineSteps: PipelineStep[]): void {
+    protected setDecoder(
+        videoStream: VideoStream,
+        ffmpegState: FFmpegState,
+        _pipelineSteps: PipelineStep[]
+    ): Decoder | null {
         let decoder: Decoder | null = null;
         if (ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc) {
             switch (videoStream.codec) {
@@ -86,10 +90,13 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         if (decoder != null) {
             this.videoInputFile.addOption(decoder);
         }
+
+        return decoder;
     }
 
     protected setVideoFilters(
         videoStream: VideoStream,
+        maybeDecoder: Decoder | null,
         ffmpegState: FFmpegState,
         desiredState: FrameState,
         pipelineSteps: PipelineStep[],
@@ -99,10 +106,10 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         currentState.isAnamorphic = videoStream.isAnamorphic;
         currentState.scaledSize = videoStream.frameSize;
         currentState.paddedSize = videoStream.frameSize;
-        currentState.frameDataLocation =
-            ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc
-                ? FrameDataLocation.Hardware
-                : FrameDataLocation.Software;
+
+        if (maybeDecoder != null) {
+            maybeDecoder.nextState(currentState);
+        }
 
         this.setDeinterlace(ffmpegState, currentState, desiredState);
         this.setScale(ffmpegState, currentState, desiredState);
@@ -151,16 +158,16 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         let scaleStep: BaseFilter;
 
         const needsToScale = currentState.scaledSize.equals(desiredState.scaledSize) == false;
-        const onlySoftware =
-            ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.None &&
-            ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.None;
+        if (!needsToScale) {
+            return;
+        }
 
-        // probably not worth uploading to immediately download and pad
-        const lotsOfSoftware =
-            currentState.frameDataLocation == FrameDataLocation.Software &&
-            desiredState.scaledSize.equals(desiredState.paddedSize) == false;
+        const decodeToSoftware = ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.None;
+        const softwareEncoder = ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.None;
+        const noHardwareFilters = desiredState.interlaced == false;
+        const needsToPad = currentState.paddedSize.equals(desiredState.paddedSize) == false;
 
-        if (needsToScale && (onlySoftware || lotsOfSoftware)) {
+        if (decodeToSoftware && (needsToPad || noHardwareFilters) && softwareEncoder) {
             scaleStep = new ScaleFilter(ffmpegState, currentState, desiredState.scaledSize, desiredState.paddedSize);
         } else {
             scaleStep = new ScaleCudaFilter(currentState, desiredState.scaledSize, desiredState.paddedSize);

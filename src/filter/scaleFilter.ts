@@ -26,6 +26,10 @@ export class ScaleFilter extends BaseFilter {
     }
 
     private generateFilter(): string {
+        if (this.currentState.scaledSize.equals(this.scaledSize)) {
+            return "";
+        }
+
         let aspectRatio = "";
         if (this.scaledSize.equals(this.paddedSize) == false) {
             aspectRatio = ":force_original_aspect_ratio=decrease";

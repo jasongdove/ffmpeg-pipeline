@@ -1,6 +1,7 @@
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { PipelineStep } from "../interfaces/pipelineStep";
 import { InputFile } from "../inputFile";
+import { FrameState } from "../frameState";
 
 export abstract class OutputOption implements PipelineStep {
     environmentVariables = new Array<EnvironmentVariable>();
@@ -10,4 +11,5 @@ export abstract class OutputOption implements PipelineStep {
     inputOptions(_inputFile: InputFile): Array<string> {
         return new Array<string>();
     }
+    nextState(_currentState: FrameState): void {}
 }

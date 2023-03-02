@@ -197,14 +197,14 @@ export abstract class PipelineBuilderBase implements PipelineBuilder {
     ): void {
         this.setAccelState(videoStream, ffmpegState, desiredState, pipelineSteps);
 
-        this.setDecoder(videoStream, ffmpegState, pipelineSteps);
+        const maybeDecoder = this.setDecoder(videoStream, ffmpegState, pipelineSteps);
 
         this.setFrameRateOutput(desiredState, pipelineSteps);
         this.setVideoTrackTimescaleOutput(desiredState, pipelineSteps);
         this.setVideoBitrateOutput(desiredState, pipelineSteps);
         this.setVideoBufferSizeOutput(desiredState, pipelineSteps);
 
-        this.setVideoFilters(videoStream, ffmpegState, desiredState, pipelineSteps, filterChain);
+        this.setVideoFilters(videoStream, maybeDecoder, ffmpegState, desiredState, pipelineSteps, filterChain);
     }
 
     protected abstract setAccelState(
@@ -218,7 +218,7 @@ export abstract class PipelineBuilderBase implements PipelineBuilder {
         videoStream: VideoStream,
         ffmpegState: FFmpegState,
         pipelineSteps: Array<PipelineStep>
-    ): void;
+    ): Decoder | null;
 
     protected getEncoder(_ffmpegState: FFmpegState, currentState: FrameState, desiredState: FrameState) {
         return this.getSoftwareEncoder(currentState, desiredState);
@@ -226,6 +226,7 @@ export abstract class PipelineBuilderBase implements PipelineBuilder {
 
     protected abstract setVideoFilters(
         videoStream: VideoStream,
+        maybeDecoder: Decoder | null,
         ffmpegState: FFmpegState,
         desiredState: FrameState,
         pipelineSteps: Array<PipelineStep>,
