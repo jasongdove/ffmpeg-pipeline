@@ -10,3 +10,5 @@ export { CommandGenerator } from "./commandGenerator";
 export { AudioState } from "./state/audioState";
 export { HardwareAccelerationMode } from "./hardwareAccelerationMode";
 export { UnknownPixelFormat } from "./format/unknownPixelFormat";
+export { PixelFormatYuv420p } from "./format/pixelFormatYuv420p";
+export { PixelFormatYuv420p10Le } from "./format/pixelFormatYuv420p10Le";

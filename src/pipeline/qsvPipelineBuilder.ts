@@ -24,6 +24,8 @@ import { DecoderHevcQsv } from "../decoder/qsv/decoderHevcQsv";
 import { DecoderMpeg2Qsv } from "../decoder/qsv/decoderMpeg2Qsv";
 import { DecoderVc1Qsv } from "../decoder/qsv/decoderVc1Qsv";
 import { DecoderVp9Qsv } from "../decoder/qsv/decoderVp9Qsv";
+import { PixelFormatNv12 } from "../format/pixelFormatNv12";
+import { PixelFormat } from "../interfaces/pixelFormat";
 
 export class QsvPipelineBuilder extends PipelineBuilderBase {
     protected setAccelState(
@@ -55,7 +57,11 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
             : HardwareAccelerationMode.None;
     }
 
-    protected setDecoder(videoStream: VideoStream, ffmpegState: FFmpegState, _pipelineSteps: PipelineStep[]): void {
+    protected setDecoder(
+        videoStream: VideoStream,
+        ffmpegState: FFmpegState,
+        _pipelineSteps: PipelineStep[]
+    ): Decoder | null {
         let decoder: Decoder | null = null;
         if (ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Qsv) {
             switch (videoStream.codec) {
@@ -84,10 +90,13 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         if (decoder != null) {
             this.videoInputFile.addOption(decoder);
         }
+
+        return decoder;
     }
 
     protected setVideoFilters(
         videoStream: VideoStream,
+        maybeDecoder: Decoder | null,
         ffmpegState: FFmpegState,
         desiredState: FrameState,
         pipelineSteps: PipelineStep[],
@@ -97,14 +106,14 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         currentState.isAnamorphic = videoStream.isAnamorphic;
         currentState.scaledSize = videoStream.frameSize;
         currentState.paddedSize = videoStream.frameSize;
-        currentState.frameDataLocation =
-            ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Qsv
-                ? FrameDataLocation.Hardware
-                : FrameDataLocation.Software;
+
+        if (maybeDecoder != null) {
+            maybeDecoder.nextState(currentState);
+        }
 
         this.setDeinterlace(ffmpegState, currentState, desiredState);
         this.setScale(videoStream, ffmpegState, currentState, desiredState);
-        this.setPad(currentState, desiredState);
+        this.setPad(videoStream, currentState, desiredState);
 
         let encoder: Encoder | null = null;
         if (ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.Qsv) {
@@ -178,9 +187,15 @@ export class QsvPipelineBuilder extends PipelineBuilderBase {
         }
     }
 
-    private setPad(currentState: FrameState, desiredState: FrameState): void {
+    private setPad(videoStream: VideoStream, currentState: FrameState, desiredState: FrameState): void {
         if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
-            const padStep = new PadFilter(currentState, desiredState.paddedSize);
+            // TODO: move this into current/desired state, but see if it works here for now
+            const pixelFormat: PixelFormat | null =
+                videoStream.pixelFormat != null && videoStream.pixelFormat.bitDepth == 8
+                    ? new PixelFormatNv12(videoStream.pixelFormat.name)
+                    : videoStream.pixelFormat;
+
+            const padStep = new PadFilter(currentState, desiredState.paddedSize, pixelFormat);
 
             padStep.nextState(currentState);
 

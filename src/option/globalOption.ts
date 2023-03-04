@@ -1,3 +1,4 @@
+import { FrameState } from "../frameState";
 import { InputFile } from "../inputFile";
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { PipelineStep } from "../interfaces/pipelineStep";
@@ -10,4 +11,5 @@ export abstract class GlobalOption implements PipelineStep {
     abstract globalOptions: Array<string>;
     filterOptions = new Array<string>();
     outputOptions = new Array<string>();
+    nextState(_currentState: FrameState): void {}
 }

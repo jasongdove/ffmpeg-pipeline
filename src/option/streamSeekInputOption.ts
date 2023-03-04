@@ -1,3 +1,4 @@
+import { FrameState } from "../frameState";
 import { AudioInputFile, InputFile, VideoInputFile } from "../inputFile";
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { InputOption } from "../interfaces/inputOption";
@@ -18,6 +19,8 @@ export class StreamSeekInputOption implements InputOption {
         // but unsure whether this lib will deal with still images
         return true;
     }
+
+    nextState(_currentState: FrameState): void {}
 
     environmentVariables = new Array<EnvironmentVariable>();
     globalOptions = new Array<string>();

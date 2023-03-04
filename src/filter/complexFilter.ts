@@ -1,4 +1,5 @@
 import { FilterChain } from "../filterChain";
+import { FrameState } from "../frameState";
 import { AudioInputFile, InputFile, VideoInputFile } from "../inputFile";
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { PipelineStep } from "../interfaces/pipelineStep";
@@ -18,6 +19,8 @@ export class ComplexFilter implements PipelineStep {
     inputOptions(_inputFile: InputFile): Array<string> {
         return new Array<string>();
     }
+
+    nextState(_currentState: FrameState): void {}
 
     private generateArguments(): Array<string> {
         let audioLabel = "0:a";

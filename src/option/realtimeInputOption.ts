@@ -1,3 +1,4 @@
+import { FrameState } from "../frameState";
 import { AudioInputFile, InputFile, VideoInputFile } from "../inputFile";
 import { EnvironmentVariable } from "../interfaces/environmentVariable";
 import { InputOption } from "../interfaces/inputOption";
@@ -21,4 +22,6 @@ export class RealtimeInputOption implements InputOption {
     globalOptions = new Array<string>();
     filterOptions = new Array<string>();
     outputOptions = new Array<string>();
+
+    nextState(_currentState: FrameState): void {}
 }

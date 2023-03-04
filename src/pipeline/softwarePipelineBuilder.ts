@@ -9,6 +9,7 @@ import { PipelineBuilderBase } from "./pipelineBuilderBase";
 import { DeinterlaceFilter } from "../filter/deinterlaceFilter";
 import { ScaleFilter } from "../filter/scaleFilter";
 import { PadFilter } from "../filter/padFilter";
+import { Decoder } from "../interfaces/decoder";
 
 export class SoftwarePipelineBuilder extends PipelineBuilderBase {
     protected setAccelState(
@@ -21,13 +22,19 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
         ffmpegState.encoderHardwareAccelerationMode = HardwareAccelerationMode.None;
     }
 
-    protected setDecoder(videoStream: VideoStream, _ffmpegState: FFmpegState, _pipelineSteps: PipelineStep[]): void {
+    protected setDecoder(
+        videoStream: VideoStream,
+        _ffmpegState: FFmpegState,
+        _pipelineSteps: PipelineStep[]
+    ): Decoder | null {
         const decoder = this.getSoftwareDecoder(videoStream);
         this.videoInputFile.addOption(decoder);
+        return decoder;
     }
 
     protected setVideoFilters(
         videoStream: VideoStream,
+        _maybeDecoder: Decoder | null,
         ffmpegState: FFmpegState,
         desiredState: FrameState,
         pipelineSteps: PipelineStep[],
@@ -81,7 +88,7 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
 
     private setPad(currentState: FrameState, desiredState: FrameState): void {
         if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
-            const padStep = new PadFilter(currentState, desiredState.paddedSize);
+            const padStep = new PadFilter(currentState, desiredState.paddedSize, null);
 
             padStep.nextState(currentState);
 
