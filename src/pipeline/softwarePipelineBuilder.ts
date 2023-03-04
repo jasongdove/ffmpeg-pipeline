@@ -88,7 +88,7 @@ export class SoftwarePipelineBuilder extends PipelineBuilderBase {
 
     private setPad(currentState: FrameState, desiredState: FrameState): void {
         if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
-            const padStep = new PadFilter(currentState, desiredState.paddedSize);
+            const padStep = new PadFilter(currentState, desiredState.paddedSize, null);
 
             padStep.nextState(currentState);
 

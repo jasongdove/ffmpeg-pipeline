@@ -1,10 +1,15 @@
 import { FrameDataLocation } from "../frameDataLocation";
 import { FrameSize } from "../frameSize";
 import { FrameState } from "../frameState";
+import { PixelFormat } from "../interfaces/pixelFormat";
 import { BaseFilter } from "./baseFilter";
 
 export class PadFilter extends BaseFilter {
-    constructor(private currentState: FrameState, private paddedSize: FrameSize) {
+    constructor(
+        private currentState: FrameState,
+        private paddedSize: FrameSize,
+        private hardwarePixelFormat: PixelFormat | null
+    ) {
         super();
     }
 
@@ -19,7 +24,9 @@ export class PadFilter extends BaseFilter {
         const pad = `pad=${this.paddedSize.width}:${this.paddedSize.height}:-1:-1:color=black`;
 
         if (this.currentState.frameDataLocation == FrameDataLocation.Hardware) {
-            // TODO: pixel format?
+            if (this.hardwarePixelFormat != null) {
+                return `hwdownload,format=${this.hardwarePixelFormat.ffmpegName},${pad}`;
+            }
 
             return `hwdownload,${pad}`;
         }

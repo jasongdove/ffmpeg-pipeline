@@ -23,6 +23,8 @@ import { DecoderHevcCuvid } from "../decoder/cuvid/decoderHevcCuvid";
 import { DecoderMpeg4Cuvid } from "../decoder/cuvid/decoderMpeg4Cuvid";
 import { DecoderVc1Cuvid } from "../decoder/cuvid/decoderVc1Cuvid";
 import { DecoderVp9Cuvid } from "../decoder/cuvid/decoderVp9Cuvid";
+import { PixelFormatNv12 } from "../format/pixelFormatNv12";
+import { PixelFormat } from "../interfaces/pixelFormat";
 
 export class NvidiaPipelineBuilder extends PipelineBuilderBase {
     protected setAccelState(
@@ -113,7 +115,7 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
 
         this.setDeinterlace(ffmpegState, currentState, desiredState);
         this.setScale(ffmpegState, currentState, desiredState);
-        this.setPad(currentState, desiredState);
+        this.setPad(videoStream, currentState, desiredState);
 
         let encoder: Encoder | null = null;
         if (ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc) {
@@ -179,9 +181,15 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         }
     }
 
-    private setPad(currentState: FrameState, desiredState: FrameState): void {
+    private setPad(videoStream: VideoStream, currentState: FrameState, desiredState: FrameState): void {
         if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
-            const padStep = new PadFilter(currentState, desiredState.paddedSize);
+            // TODO: move this into current/desired state, but see if it works here for now
+            const pixelFormat: PixelFormat | null =
+                videoStream.pixelFormat != null && videoStream.pixelFormat.bitDepth == 8
+                    ? new PixelFormatNv12(videoStream.pixelFormat.name)
+                    : videoStream.pixelFormat;
+
+            const padStep = new PadFilter(currentState, desiredState.paddedSize, pixelFormat);
 
             padStep.nextState(currentState);
 
