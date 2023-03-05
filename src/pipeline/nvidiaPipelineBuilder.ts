@@ -115,7 +115,7 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
 
         this.setDeinterlace(ffmpegState, currentState, desiredState);
         this.setScale(ffmpegState, currentState, desiredState);
-        this.setPad(videoStream, currentState, desiredState);
+        this.setPad(videoStream, currentState, desiredState, ffmpegState);
 
         let encoder: Encoder | null = null;
         if (ffmpegState.encoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc) {
@@ -181,11 +181,18 @@ export class NvidiaPipelineBuilder extends PipelineBuilderBase {
         }
     }
 
-    private setPad(videoStream: VideoStream, currentState: FrameState, desiredState: FrameState): void {
+    private setPad(
+        videoStream: VideoStream,
+        currentState: FrameState,
+        desiredState: FrameState,
+        ffmpegState: FFmpegState
+    ): void {
         if (currentState.paddedSize.equals(desiredState.paddedSize) == false) {
             // TODO: move this into current/desired state, but see if it works here for now
             const pixelFormat: PixelFormat | null =
-                videoStream.pixelFormat != null && videoStream.pixelFormat.bitDepth == 8
+                ffmpegState.decoderHardwareAccelerationMode == HardwareAccelerationMode.Nvenc &&
+                videoStream.pixelFormat != null &&
+                videoStream.pixelFormat.bitDepth == 8
                     ? new PixelFormatNv12(videoStream.pixelFormat.name)
                     : videoStream.pixelFormat;
 
