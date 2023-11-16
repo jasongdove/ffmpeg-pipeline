@@ -11,7 +11,7 @@ export class QsvHardwareAccelerationOption extends GlobalOption {
     private getGlobalOptions(): Array<string> {
         const initDevices =
             os.type().toLowerCase() == "windows_nt"
-                ? new Array<string>("-init_hw_device", "qsv=hw:hw,child_device_type=dxva2", "-filter_hw_device", "hw")
+                ? new Array<string>("-init_hw_device", "d3d11va=hw:,vendor=0x8086", "-filter_hw_device", "hw")
                 : new Array<string>("-init_hw_device", "qsv=hw:hw,child_device_type=vaapi", "-filter_hw_device", "hw");
 
         const result = new Array<string>("-hwaccel", "qsv", "-hwaccel_output_format", "qsv");
